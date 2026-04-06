@@ -16,11 +16,7 @@ export class Trampoline {
     return { x: this.x, y: this.y, width: Trampoline.WIDTH, height: Trampoline.HEIGHT };
   }
 
-  update(dt: number, scrollSpeed: number): void {
-    this.x -= scrollSpeed * dt;
-  }
-
-  isOffScreen(): boolean {
-    return this.x + Trampoline.WIDTH < 0;
+  isFarBehind(playerX: number): boolean {
+    return this.x + Trampoline.WIDTH < playerX - 1000;
   }
 }

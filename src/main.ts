@@ -2,6 +2,8 @@ import { World } from './World';
 import { GameLoop } from './GameLoop';
 import { SpawnSystem } from './systems/SpawnSystem';
 import { Renderer } from './renderer/Renderer';
+import { Camera } from './Camera';
+import { InputSystem } from './systems/InputSystem';
 import type { GameConfig } from './types';
 
 export function startGame(canvas: HTMLCanvasElement): void {
@@ -17,7 +19,6 @@ export function startGame(canvas: HTMLCanvasElement): void {
 
   const config: GameConfig = {
     gravity: 980,
-    scrollSpeed: 200,
     canvasWidth: canvas.width,
     canvasHeight: canvas.height,
   };
@@ -25,7 +26,12 @@ export function startGame(canvas: HTMLCanvasElement): void {
   const world = new World(config);
   const gameLoop = new GameLoop(world);
   const spawnSystem = new SpawnSystem(config);
+  const camera = new Camera(config.canvasWidth);
   const renderer = new Renderer(ctx);
+
+  const input = new InputSystem(world.player);
+  window.addEventListener('keydown', (e) => input.keyDown(e.code));
+  window.addEventListener('keyup', (e) => input.keyUp(e.code));
 
   // Place an initial trampoline under the player
   world.addTrampoline(config.canvasWidth * 0.1, config.canvasHeight * 0.7);
@@ -42,7 +48,8 @@ export function startGame(canvas: HTMLCanvasElement): void {
 
     spawnSystem.update(world, dt);
     gameLoop.tick(dt);
-    renderer.render(world);
+    camera.follow(world.player.centerX());
+    renderer.render(world, camera);
 
     requestAnimationFrame(frame);
   }

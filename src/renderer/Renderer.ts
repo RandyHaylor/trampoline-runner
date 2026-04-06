@@ -3,6 +3,7 @@ import { Player } from '../entities/Player';
 import { Trampoline } from '../entities/Trampoline';
 import { Coin } from '../entities/Coin';
 import { Enemy } from '../entities/Enemy';
+import { Camera } from '../Camera';
 
 export class Renderer {
   private ctx: CanvasRenderingContext2D;
@@ -11,7 +12,7 @@ export class Renderer {
     this.ctx = ctx;
   }
 
-  render(world: World): void {
+  render(world: World, camera: Camera): void {
     const { width, height } = this.ctx.canvas;
 
     // Clear
@@ -24,24 +25,24 @@ export class Renderer {
     // Trampolines
     this.ctx.fillStyle = '#4CAF50';
     for (const t of world.trampolines) {
-      this.ctx.fillRect(t.x, t.y, Trampoline.WIDTH, Trampoline.HEIGHT);
+      this.ctx.fillRect(camera.worldToScreen(t.x), t.y, Trampoline.WIDTH, Trampoline.HEIGHT);
     }
 
     // Coins (yellow squares)
     this.ctx.fillStyle = '#FFD700';
     for (const c of world.coins) {
-      this.ctx.fillRect(c.x, c.y, Coin.WIDTH, Coin.HEIGHT);
+      this.ctx.fillRect(camera.worldToScreen(c.x), c.y, Coin.WIDTH, Coin.HEIGHT);
     }
 
     // Enemies (red)
     this.ctx.fillStyle = '#FF0000';
     for (const e of world.enemies) {
-      this.ctx.fillRect(e.x, e.y, Enemy.WIDTH, Enemy.HEIGHT);
+      this.ctx.fillRect(camera.worldToScreen(e.x), e.y, Enemy.WIDTH, Enemy.HEIGHT);
     }
 
     // Player (blue)
     this.ctx.fillStyle = '#2196F3';
-    this.ctx.fillRect(world.player.x, world.player.y, Player.WIDTH, Player.HEIGHT);
+    this.ctx.fillRect(camera.worldToScreen(world.player.x), world.player.y, Player.WIDTH, Player.HEIGHT);
 
     // Score
     this.ctx.fillStyle = '#FFFFFF';

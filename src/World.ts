@@ -38,16 +38,6 @@ export class World {
   update(dt: number): void {
     this.player.update(dt, this.config.gravity);
 
-    for (const t of this.trampolines) {
-      t.update(dt, this.config.scrollSpeed);
-    }
-    for (const c of this.coins) {
-      c.update(dt, this.config.scrollSpeed);
-    }
-    for (const e of this.enemies) {
-      e.update(dt, this.config.scrollSpeed);
-    }
-
     // Bounce off trampolines
     const playerBounds = this.player.bounds();
     for (const t of this.trampolines) {
@@ -66,9 +56,9 @@ export class World {
       return true;
     });
 
-    // Remove offscreen entities
-    this.trampolines = this.trampolines.filter(t => !t.isOffScreen());
-    this.coins = this.coins.filter(c => !c.isOffScreen());
-    this.enemies = this.enemies.filter(e => !e.isOffScreen());
+    // Remove entities far behind the player
+    this.trampolines = this.trampolines.filter(t => !t.isFarBehind(this.player.x));
+    this.coins = this.coins.filter(c => !c.isFarBehind(this.player.x));
+    this.enemies = this.enemies.filter(e => !e.isFarBehind(this.player.x));
   }
 }

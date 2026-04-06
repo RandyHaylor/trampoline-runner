@@ -14,7 +14,6 @@ export interface EntityState {
 
 export interface GameConfig {
   gravity: number;
-  scrollSpeed: number;
   canvasWidth: number;
   canvasHeight: number;
 }

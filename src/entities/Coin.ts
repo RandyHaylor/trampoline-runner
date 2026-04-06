@@ -16,11 +16,7 @@ export class Coin {
     return { x: this.x, y: this.y, width: Coin.WIDTH, height: Coin.HEIGHT };
   }
 
-  update(dt: number, scrollSpeed: number): void {
-    this.x -= scrollSpeed * dt;
-  }
-
-  isOffScreen(): boolean {
-    return this.x + Coin.WIDTH < 0;
+  isFarBehind(playerX: number): boolean {
+    return this.x + Coin.WIDTH < playerX - 1000;
   }
 }

@@ -16,11 +16,7 @@ export class Enemy {
     return { x: this.x, y: this.y, width: Enemy.WIDTH, height: Enemy.HEIGHT };
   }
 
-  update(dt: number, scrollSpeed: number): void {
-    this.x -= scrollSpeed * dt;
-  }
-
-  isOffScreen(): boolean {
-    return this.x + Enemy.WIDTH < 0;
+  isFarBehind(playerX: number): boolean {
+    return this.x + Enemy.WIDTH < playerX - 1000;
   }
 }
