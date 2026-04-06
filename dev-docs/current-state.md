@@ -1,8 +1,8 @@
 # Current State
 
-Sprint 1 (core game engine) is complete. All game logic modules are implemented and tested.
+Sprint 2 (renderer + playable HTML) is complete. The game is now playable in a browser.
 
-**48 tests passing across 10 test files.**
+**56 tests passing across 11 test files.**
 
 ## Implemented Modules
 
@@ -18,6 +18,14 @@ Sprint 1 (core game engine) is complete. All game logic modules are implemented 
 | SpawnSystem | src/systems/SpawnSystem.ts | 5 |
 | World | src/World.ts | 5 |
 | GameLoop | src/GameLoop.ts | 4 |
+| Renderer | src/renderer/Renderer.ts | 8 |
+
+## Entry Points
+
+| File | Purpose |
+|------|---------|
+| index.html | Canvas element, mobile-first viewport, loads game |
+| src/main.ts | Wires GameLoop + SpawnSystem + Renderer, starts rAF loop |
 
 ## Architecture
 
@@ -25,8 +33,9 @@ Sprint 1 (core game engine) is complete. All game logic modules are implemented 
 - CollisionSystem is stateless -- AABB checks only
 - World.update() handles gravity, scrolling, bounce resolution, coin collection, and offscreen cleanup
 - SpawnSystem spawns entities at distance-based intervals at the right edge of the canvas
-- Only the renderer (not yet implemented) will touch canvas
+- Renderer is the ONLY layer that touches canvas -- draws all entities and score
+- main.ts wires everything together with requestAnimationFrame
 
 ## Next Steps
 
-- Sprint 2: Renderer, input handling, game-over detection, score display
+- Sprint 3: Game-over detection (enemy collision, falling off screen), restart flow, touch input
