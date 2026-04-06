@@ -16,9 +16,9 @@ describe('types', () => {
     expect(e.vy).toBe(4);
   });
 
-  it('GameConfig holds gravity, scrollSpeed, canvasWidth, canvasHeight', () => {
-    const c: GameConfig = { gravity: 980, scrollSpeed: 200, canvasWidth: 800, canvasHeight: 600 };
+  it('GameConfig holds gravity, canvasWidth, canvasHeight', () => {
+    const c: GameConfig = { gravity: 980, canvasWidth: 800, canvasHeight: 600 };
     expect(c.gravity).toBe(980);
-    expect(c.scrollSpeed).toBe(200);
+    expect(c.canvasWidth).toBe(800);
   });
 });

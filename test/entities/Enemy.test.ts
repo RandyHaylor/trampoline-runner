@@ -15,19 +15,48 @@ describe('Enemy', () => {
     expect(b.height).toBe(Enemy.HEIGHT);
   });
 
-  it('scrolls left on update', () => {
+  it('stays at its position (no auto-scroll)', () => {
     const e = new Enemy(500, 100);
-    e.update(0.1, 200);
-    expect(e.x).toBeCloseTo(480);
+    expect(e.x).toBe(500);
   });
 
-  it('isOffScreen when past left edge', () => {
-    const e = new Enemy(-Enemy.WIDTH - 1, 0);
-    expect(e.isOffScreen()).toBe(true);
+  it('isFarBehind returns true when far left of given x', () => {
+    const e = new Enemy(100, 300);
+    expect(e.isFarBehind(1500)).toBe(true);
   });
 
-  it('is not offscreen when visible', () => {
-    const e = new Enemy(100, 0);
-    expect(e.isOffScreen()).toBe(false);
+  it('isFarBehind returns false when near given x', () => {
+    const e = new Enemy(400, 300);
+    expect(e.isFarBehind(500)).toBe(false);
+  });
+
+  it('stores base y position', () => {
+    const e = new Enemy(100, 300);
+    expect(e.baseY).toBe(300);
+  });
+
+  it('update oscillates y around baseY sinusoidally', () => {
+    const e = new Enemy(100, 300);
+    e.update(0.5);
+    // y should differ from baseY after some time
+    expect(e.y).not.toBe(300);
+    // but baseY stays the same
+    expect(e.baseY).toBe(300);
+  });
+
+  it('y stays within amplitude of baseY', () => {
+    const e = new Enemy(100, 300);
+    for (let t = 0; t < 100; t++) {
+      e.update(0.016);
+    }
+    expect(Math.abs(e.y - e.baseY)).toBeLessThanOrEqual(Enemy.FLOAT_AMPLITUDE);
+  });
+
+  it('uses phase offset based on x so enemies bob differently', () => {
+    const e1 = new Enemy(100, 300);
+    const e2 = new Enemy(200, 300);
+    e1.update(0.5);
+    e2.update(0.5);
+    expect(e1.y).not.toBe(e2.y);
   });
 });

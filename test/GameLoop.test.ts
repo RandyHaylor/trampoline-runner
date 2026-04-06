@@ -3,7 +3,7 @@ import { GameLoop } from '../src/GameLoop';
 import { World } from '../src/World';
 import type { GameConfig } from '../src/types';
 
-const config: GameConfig = { gravity: 980, scrollSpeed: 200, canvasWidth: 800, canvasHeight: 600 };
+const config: GameConfig = { gravity: 980, canvasWidth: 800, canvasHeight: 600 };
 
 describe('GameLoop', () => {
   it('constructs with a world', () => {

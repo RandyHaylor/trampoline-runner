@@ -6,6 +6,7 @@
 | 1 | Core game engine -- types, physics, entities, collision, world, game loop, spawning | Complete |
 | 2 | Renderer layer + playable HTML entry point | Complete |
 | 3 | Remove auto-scroll, add left/right player movement, camera system | Complete |
+| 4 | Camera follow all directions, Perlin-driven world generation, floating enemies, coins | Complete |
 
 ## Sprint 2 Details (2026-04-06)
 
@@ -40,6 +41,28 @@
 - src/main.ts -- wired InputSystem with keydown/keyup event listeners
 
 **Test results:** 70 tests, 13 test files, all passing
+
+## Sprint 4 Details (2026-04-06)
+
+**Delivered:**
+- src/Camera.ts -- dead-zone follow in middle 1/3 for both x and y axes, no >= 0 clamping, worldToScreenY()
+- src/entities/Player.ts -- added centerY() method
+- src/math/PerlinNoise.ts -- seeded 2D gradient noise, deterministic, smooth
+- src/systems/TrampolineField.ts -- Perlin-driven procedural trampoline placement in all directions, variable width (80-300px), viewport + 25% buffer query
+- src/entities/Trampoline.ts -- optional width parameter, instance-based bounds
+- src/systems/EntityField.ts -- Perlin-driven procedural coin and enemy placement with configurable density thresholds
+- src/entities/Enemy.ts -- sinusoidal floating with phase offset based on x position
+- src/World.ts -- uses trampolineField, coinField, enemyField; collected coins tracked in Set
+- src/main.ts -- wires TrampolineField and EntityField instances, removed SpawnSystem
+- Deleted src/systems/SpawnSystem.ts (replaced by Perlin fields)
+- src/renderer/Renderer.ts -- uses camera y offset and instance trampoline width
+
+**Test results:** 104 tests, 15 test files, all passing
+
+**New test files:**
+- test/math/PerlinNoise.test.ts (6 tests) -- range, determinism, seed variation, smoothness, negative coords, integer boundaries
+- test/systems/TrampolineField.test.ts (6 tests) -- viewport query, determinism, variable width, negative coords, density, buffer zone
+- test/systems/EntityField.test.ts (7 tests) -- determinism, seed variation, coin/enemy sparsity, 2D distribution, viewport query
 
 ## Sprint 1 Details (2026-04-06)
 

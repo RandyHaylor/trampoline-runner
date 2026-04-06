@@ -6,17 +6,19 @@ export class Trampoline {
 
   x: number;
   y: number;
+  width: number;
 
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, width: number = Trampoline.WIDTH) {
     this.x = x;
     this.y = y;
+    this.width = width;
   }
 
   bounds(): Rect {
-    return { x: this.x, y: this.y, width: Trampoline.WIDTH, height: Trampoline.HEIGHT };
+    return { x: this.x, y: this.y, width: this.width, height: Trampoline.HEIGHT };
   }
 
   isFarBehind(playerX: number): boolean {
-    return this.x + Trampoline.WIDTH < playerX - 1000;
+    return this.x + this.width < playerX - 1000;
   }
 }

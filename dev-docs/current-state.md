@@ -1,8 +1,8 @@
 # Current State
 
-Sprint 3 (remove auto-scroll, add left/right player control) is complete.
+Sprint 4 (camera follow all directions, Perlin-driven world generation, floating enemies) is complete.
 
-**70 tests passing across 13 test files.**
+**104 tests passing across 15 test files.**
 
 ## Implemented Modules
 
@@ -10,15 +10,17 @@ Sprint 3 (remove auto-scroll, add left/right player control) is complete.
 |--------|------|-------|
 | Types | src/types.ts | 3 |
 | Bounce Physics | src/physics/bounce.ts | 5 |
-| Player | src/entities/Player.ts | 10 |
-| Trampoline | src/entities/Trampoline.ts | 6 |
+| Player | src/entities/Player.ts | 11 |
+| Trampoline | src/entities/Trampoline.ts | 9 |
 | Coin | src/entities/Coin.ts | 5 |
-| Enemy | src/entities/Enemy.ts | 5 |
+| Enemy | src/entities/Enemy.ts | 9 |
 | CollisionSystem | src/systems/CollisionSystem.ts | 5 |
 | InputSystem | src/systems/InputSystem.ts | 5 |
-| SpawnSystem | src/systems/SpawnSystem.ts | 5 |
-| Camera | src/Camera.ts | 4 |
-| World | src/World.ts | 5 |
+| PerlinNoise | src/math/PerlinNoise.ts | 6 |
+| TrampolineField | src/systems/TrampolineField.ts | 6 |
+| EntityField | src/systems/EntityField.ts | 7 |
+| Camera | src/Camera.ts | 12 |
+| World | src/World.ts | 9 |
 | GameLoop | src/GameLoop.ts | 4 |
 | Renderer | src/renderer/Renderer.ts | 8 |
 
@@ -27,31 +29,40 @@ Sprint 3 (remove auto-scroll, add left/right player control) is complete.
 | File | Purpose |
 |------|---------|
 | index.html | Canvas element, mobile-first viewport, loads game |
-| src/main.ts | Wires GameLoop + SpawnSystem + InputSystem + Camera + Renderer, starts rAF loop |
+| src/main.ts | Wires GameLoop + TrampolineField + EntityField + InputSystem + Camera + Renderer, starts rAF loop |
 
 ## Architecture
 
 - All entities are pure TS classes with `bounds(): Rect`, no canvas dependency
-- Entities are static in world space -- no auto-scrolling
+- World is procedurally generated using seeded 2D Perlin noise (deterministic)
+- TrampolineField: divides world into cells, Perlin noise determines placement and width (80-300px)
+- EntityField: separate Perlin fields for coins (dense, threshold 0.05) and enemies (sparse, threshold 0.25)
+- Entities exist in all directions (negative and positive x/y coordinates)
+- Viewport-based visibility: fields return only entities within viewport + 25% buffer
+- Camera uses dead-zone (middle 1/3) approach for both x and y axes -- no clamping to >= 0
 - Player moves left/right via arrow keys or A/D (InputSystem maps keys to moveLeft/moveRight/stopHorizontal)
-- Camera follows player horizontally, Renderer uses camera.worldToScreen() for all drawing
-- Entities have isFarBehind(playerX) for cleanup when player moves past them
-- SpawnSystem spawns entities ahead of the player based on player.x position
+- Enemies float sinusoidally with phase offsets based on x position
+- Collected coins tracked in a Set so they don't reappear from the field
 - CollisionSystem is stateless -- AABB checks only
-- World.update() handles gravity, bounce resolution, coin collection, and far-behind cleanup
-- Renderer is the ONLY layer that touches canvas -- draws all entities and score with camera offset
+- World.update() handles gravity, bounce resolution, coin collection, enemy floating
+- Renderer is the ONLY layer that touches canvas -- draws all entities and score with camera offset (both x and y)
 - main.ts wires everything together with requestAnimationFrame
 
-## Sprint 3 Changes (from Sprint 2)
+## Sprint 4 Changes (from Sprint 3)
 
-- Removed auto-scroll: scrollSpeed removed from GameConfig and all entities
-- Added Player.moveLeft(), moveRight(), stopHorizontal(), vx applied in update()
-- Added InputSystem: maps ArrowLeft/A to moveLeft, ArrowRight/D to moveRight
-- Added Camera: follows player, provides worldToScreen() for rendering
-- Entities now have isFarBehind(playerX) instead of isOffScreen()
-- SpawnSystem uses player.x position instead of distance traveled
-- Renderer accepts Camera parameter, applies offset to all entity positions
+- Camera follows player in middle 1/3 dead zone on both axes (x and y), no >= 0 clamp
+- Camera.follow() accepts both centerX and centerY, worldToScreenY() added
+- Player.centerY() added
+- Renderer applies camera offset to both x and y for all entities
+- PerlinNoise module: seeded 2D gradient noise with deterministic output
+- TrampolineField: Perlin-driven procedural trampoline placement in all directions, variable width
+- Trampoline accepts optional width parameter, instance width used in bounds()
+- EntityField: Perlin-driven procedural coin and enemy placement with different densities
+- Enemy.update(dt) adds sinusoidal floating with phase offset
+- SpawnSystem removed entirely -- all entity placement is now Perlin-driven
+- World uses trampolineField, coinField, enemyField for viewport-based entity queries
+- Collected coins tracked in Set to prevent reappearing
 
 ## Next Steps
 
-- Sprint 4: Game-over detection (enemy collision, falling off screen), restart flow, touch input
+- Sprint 5: Game-over detection (enemy collision, falling off screen), restart flow, touch input, score display improvements

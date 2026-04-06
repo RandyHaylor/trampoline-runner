@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Renderer } from '../../src/renderer/Renderer';
 import { World } from '../../src/World';
+import { Camera } from '../../src/Camera';
 import type { GameConfig } from '../../src/types';
 
 function createMockCtx() {
@@ -23,7 +24,6 @@ function createMockCtx() {
 
 const config: GameConfig = {
   gravity: 980,
-  scrollSpeed: 200,
   canvasWidth: 480,
   canvasHeight: 800,
 };
@@ -31,11 +31,13 @@ const config: GameConfig = {
 describe('Renderer', () => {
   let ctx: CanvasRenderingContext2D;
   let world: World;
+  let camera: Camera;
   let renderer: Renderer;
 
   beforeEach(() => {
     ctx = createMockCtx();
     world = new World(config);
+    camera = new Camera(config.canvasWidth, config.canvasHeight);
     renderer = new Renderer(ctx);
   });
 
@@ -44,57 +46,68 @@ describe('Renderer', () => {
   });
 
   it('calls clearRect on render', () => {
-    renderer.render(world);
+    renderer.render(world, camera);
     expect((ctx.clearRect as ReturnType<typeof vi.fn>)).toHaveBeenCalledWith(0, 0, 480, 800);
   });
 
-  it('draws the player as a fillRect', () => {
-    renderer.render(world);
-    expect((ctx.fillRect as ReturnType<typeof vi.fn>)).toHaveBeenCalled();
-    // Player should be drawn at player position
+  it('draws the player using camera offset for both axes', () => {
+    camera.follow(world.player.centerX(), world.player.centerY());
+    renderer.render(world, camera);
     const calls = (ctx.fillRect as ReturnType<typeof vi.fn>).mock.calls;
+    const expectedScreenX = camera.worldToScreen(world.player.x);
+    const expectedScreenY = camera.worldToScreenY(world.player.y);
     const playerCall = calls.find(
-      (c: number[]) => c[0] === world.player.x && c[1] === world.player.y
+      (c: number[]) => c[0] === expectedScreenX && c[1] === expectedScreenY
     );
     expect(playerCall).toBeDefined();
   });
 
-  it('draws trampolines via fillRect', () => {
-    world.addTrampoline(300, 600);
-    renderer.render(world);
+  it('draws trampolines using camera offset for both axes', () => {
+    world.player.x = 1000;
+    world.addTrampoline(1100, 600);
+    camera.follow(world.player.centerX(), world.player.centerY());
+    expect(camera.x).toBeGreaterThan(0);
+    renderer.render(world, camera);
     const calls = (ctx.fillRect as ReturnType<typeof vi.fn>).mock.calls;
+    const expectedScreenX = camera.worldToScreen(1100);
+    const expectedScreenY = camera.worldToScreenY(600);
+    expect(expectedScreenX).not.toBe(1100);
     const trampCall = calls.find(
-      (c: number[]) => c[0] === 300 && c[1] === 600
+      (c: number[]) => c[0] === expectedScreenX && c[1] === expectedScreenY
     );
     expect(trampCall).toBeDefined();
   });
 
-  it('draws coins', () => {
+  it('draws coins using camera offset for both axes', () => {
     world.addCoin(200, 400);
-    renderer.render(world);
-    // Coins can be drawn as fillRect or arc+fill
+    camera.follow(world.player.centerX(), world.player.centerY());
+    renderer.render(world, camera);
     const fillRectCalls = (ctx.fillRect as ReturnType<typeof vi.fn>).mock.calls;
     const fillCalls = (ctx.fill as ReturnType<typeof vi.fn>).mock.calls;
+    const expectedScreenX = camera.worldToScreen(200);
+    const expectedScreenY = camera.worldToScreenY(400);
     const coinRect = fillRectCalls.find(
-      (c: number[]) => c[0] === 200 && c[1] === 400
+      (c: number[]) => c[0] === expectedScreenX && c[1] === expectedScreenY
     );
-    // Accept either fillRect or arc-based drawing
     expect(coinRect || fillCalls.length > 0).toBeTruthy();
   });
 
-  it('draws enemies via fillRect', () => {
+  it('draws enemies using camera offset for both axes', () => {
     world.addEnemy(350, 500);
-    renderer.render(world);
+    camera.follow(world.player.centerX(), world.player.centerY());
+    renderer.render(world, camera);
     const calls = (ctx.fillRect as ReturnType<typeof vi.fn>).mock.calls;
+    const expectedScreenX = camera.worldToScreen(350);
+    const expectedScreenY = camera.worldToScreenY(500);
     const enemyCall = calls.find(
-      (c: number[]) => c[0] === 350 && c[1] === 500
+      (c: number[]) => c[0] === expectedScreenX && c[1] === expectedScreenY
     );
     expect(enemyCall).toBeDefined();
   });
 
   it('draws score text via fillText', () => {
     world.score = 42;
-    renderer.render(world);
+    renderer.render(world, camera);
     const calls = (ctx.fillText as ReturnType<typeof vi.fn>).mock.calls;
     expect(calls.length).toBeGreaterThan(0);
     const scoreCall = calls.find((c: string[]) => c[0].includes('42'));
@@ -102,8 +115,7 @@ describe('Renderer', () => {
   });
 
   it('draws background before entities', () => {
-    renderer.render(world);
-    // clearRect should be called before any fillRect
+    renderer.render(world, camera);
     expect((ctx.clearRect as ReturnType<typeof vi.fn>)).toHaveBeenCalled();
   });
 });

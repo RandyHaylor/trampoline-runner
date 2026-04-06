@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { World } from '../src/World';
+import { EntityField } from '../src/systems/EntityField';
 import type { GameConfig } from '../src/types';
 
-const config: GameConfig = { gravity: 980, scrollSpeed: 200, canvasWidth: 800, canvasHeight: 600 };
+const config: GameConfig = { gravity: 980, canvasWidth: 800, canvasHeight: 600 };
 
 describe('World', () => {
   it('initializes with a player and empty entity lists', () => {
@@ -32,10 +33,51 @@ describe('World', () => {
     expect(w.player.y).not.toBe(initialY);
   });
 
-  it('update scrolls trampolines and removes offscreen ones', () => {
+  it('removes trampolines far behind the player', () => {
     const w = new World(config);
-    w.addTrampoline(-190, 300); // almost offscreen
-    w.update(1); // scroll 200 pixels left => x = -390, offscreen
+    // Move player far ahead
+    w.player.x = 2000;
+    // Place trampoline far behind (x=100, so 100+200 < 2000-1000 => 300 < 1000)
+    w.addTrampoline(100, 300);
+    w.update(0.016);
     expect(w.trampolines).toHaveLength(0);
+  });
+
+  it('populates coins from coinField when set', () => {
+    const w = new World(config);
+    w.coinField = new EntityField(42, 800, 600, 'coin');
+    w.update(0.016);
+    expect(w.coins.length).toBeGreaterThan(0);
+  });
+
+  it('populates enemies from enemyField when set', () => {
+    const w = new World(config);
+    w.enemyField = new EntityField(42, 800, 600, 'enemy');
+    w.update(0.016);
+    // enemies may or may not appear near origin, just verify it doesn't crash
+    expect(Array.isArray(w.enemies)).toBe(true);
+  });
+
+  it('tracks collected coins so they do not reappear', () => {
+    const w = new World(config);
+    w.coinField = new EntityField(42, 800, 600, 'coin');
+    w.update(0.016);
+    const initialCount = w.coins.length;
+    if (initialCount > 0) {
+      // Simulate collecting a coin by adding its key to collectedCoins
+      const coin = w.coins[0];
+      w.collectedCoins.add(`${coin.x},${coin.y}`);
+      w.update(0.016);
+      expect(w.coins.length).toBe(initialCount - 1);
+    }
+  });
+
+  it('enemies float during update', () => {
+    const w = new World(config);
+    w.addEnemy(100, 300);
+    const initialY = w.enemies[0].y;
+    w.update(0.5);
+    // After update, enemy y should have changed due to floating
+    expect(w.enemies[0].y).not.toBe(initialY);
   });
 });

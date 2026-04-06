@@ -17,20 +17,38 @@ describe('Trampoline', () => {
     expect(b.height).toBe(Trampoline.HEIGHT);
   });
 
-  it('scrolls left by scrollSpeed * dt', () => {
+  it('stays at its position (no auto-scroll)', () => {
     const t = new Trampoline(500, 300);
-    t.update(0.016, 200);
-    expect(t.x).toBeCloseTo(500 - 200 * 0.016);
+    expect(t.x).toBe(500);
+    // No update method that scrolls
   });
 
-  it('isOffScreen returns true when fully past left edge', () => {
-    const t = new Trampoline(-Trampoline.WIDTH - 1, 300);
-    expect(t.isOffScreen()).toBe(true);
-  });
-
-  it('isOffScreen returns false when still visible', () => {
+  it('isFarBehind returns true when far left of given x', () => {
     const t = new Trampoline(100, 300);
-    expect(t.isOffScreen()).toBe(false);
+    expect(t.isFarBehind(1500)).toBe(true);
+  });
+
+  it('isFarBehind returns false when near given x', () => {
+    const t = new Trampoline(400, 300);
+    expect(t.isFarBehind(500)).toBe(false);
+  });
+
+  it('accepts custom width parameter', () => {
+    const t = new Trampoline(50, 300, 150);
+    expect(t.width).toBe(150);
+    expect(t.bounds().width).toBe(150);
+  });
+
+  it('defaults width to static WIDTH when not provided', () => {
+    const t = new Trampoline(50, 300);
+    expect(t.width).toBe(Trampoline.WIDTH);
+    expect(t.bounds().width).toBe(Trampoline.WIDTH);
+  });
+
+  it('isFarBehind uses instance width', () => {
+    const t = new Trampoline(100, 300, 50);
+    // x + width = 150, playerX - 1000 = 500 => 150 < 500 => true
+    expect(t.isFarBehind(1500)).toBe(true);
   });
 
   it('has static WIDTH and HEIGHT constants', () => {

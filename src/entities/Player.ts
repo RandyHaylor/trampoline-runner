@@ -25,6 +25,10 @@ export class Player {
     return this.x + Player.WIDTH / 2;
   }
 
+  centerY(): number {
+    return this.y + Player.HEIGHT / 2;
+  }
+
   moveLeft(): void {
     this.vx = -Player.MOVE_SPEED;
   }

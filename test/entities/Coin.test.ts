@@ -15,19 +15,18 @@ describe('Coin', () => {
     expect(b.height).toBe(Coin.HEIGHT);
   });
 
-  it('scrolls left on update', () => {
+  it('stays at its position (no auto-scroll)', () => {
     const c = new Coin(500, 100);
-    c.update(0.1, 200);
-    expect(c.x).toBeCloseTo(480);
+    expect(c.x).toBe(500);
   });
 
-  it('isOffScreen when past left edge', () => {
-    const c = new Coin(-Coin.WIDTH - 1, 0);
-    expect(c.isOffScreen()).toBe(true);
+  it('isFarBehind returns true when far left of given x', () => {
+    const c = new Coin(100, 300);
+    expect(c.isFarBehind(1500)).toBe(true);
   });
 
-  it('is not offscreen when visible', () => {
-    const c = new Coin(100, 0);
-    expect(c.isOffScreen()).toBe(false);
+  it('isFarBehind returns false when near given x', () => {
+    const c = new Coin(400, 300);
+    expect(c.isFarBehind(500)).toBe(false);
   });
 });
