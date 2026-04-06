@@ -1,0 +1,18 @@
+{
+  "name": "trampoline-runner",
+  "version": "0.1.0",
+  "description": "Mobile browser auto-runner game with trampoline platforms",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "test:run": "vitest run",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "jsdom": "^24.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
