@@ -1,7 +1,6 @@
 import { World } from './World';
 import { GameLoop } from './GameLoop';
-import { TrampolineField } from './systems/TrampolineField';
-import { EntityField } from './systems/EntityField';
+import { WorldGen } from './systems/WorldGen';
 import { Renderer } from './renderer/Renderer';
 import { Camera } from './Camera';
 import { InputSystem } from './systems/InputSystem';
@@ -26,12 +25,12 @@ export function startGame(canvas: HTMLCanvasElement): void {
 
   const world = new World(config);
   const gameLoop = new GameLoop(world);
-  const trampolineField = new TrampolineField(12345, config.canvasWidth, config.canvasHeight);
-  const coinField = new EntityField(54321, config.canvasWidth, config.canvasHeight, 'coin');
-  const enemyField = new EntityField(67890, config.canvasWidth, config.canvasHeight, 'enemy');
-  world.trampolineField = trampolineField;
-  world.coinField = coinField;
-  world.enemyField = enemyField;
+  world.worldGen = new WorldGen({
+    cellSize: 100,
+    trampolines: { chance: 0.3, minSpacing: 2, sizeRange: { min: 80, max: 300 } },
+    coins: { chance: 0.2, minSpacing: 1 },
+    enemies: { chance: 0.1, minSpacing: 3 },
+  });
   const camera = new Camera(config.canvasWidth, config.canvasHeight);
   const renderer = new Renderer(ctx);
 

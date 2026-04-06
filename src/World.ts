@@ -5,16 +5,13 @@ import { Coin } from './entities/Coin';
 import { Enemy } from './entities/Enemy';
 import { CollisionSystem } from './systems/CollisionSystem';
 import { bounceVelocityFor } from './physics/bounce';
-import { TrampolineField } from './systems/TrampolineField';
-import { EntityField } from './systems/EntityField';
+import { WorldGen } from './systems/WorldGen';
 
 export class World {
   config: GameConfig;
   player: Player;
   trampolines: Trampoline[];
-  trampolineField: TrampolineField | null;
-  coinField: EntityField | null;
-  enemyField: EntityField | null;
+  worldGen: WorldGen | null;
   coins: Coin[];
   enemies: Enemy[];
   score: number;
@@ -26,9 +23,7 @@ export class World {
     this.config = config;
     this.player = new Player(config.canvasWidth * 0.2, config.canvasHeight * 0.5);
     this.trampolines = [];
-    this.trampolineField = null;
-    this.coinField = null;
-    this.enemyField = null;
+    this.worldGen = null;
     this.coins = [];
     this.enemies = [];
     this.score = 0;
@@ -56,38 +51,21 @@ export class World {
   update(dt: number): void {
     this.player.update(dt, this.config.gravity);
 
-    // Get trampolines from field if available
-    if (this.trampolineField) {
-      this.trampolines = this.trampolineField.getTrampolinesInView(
+    // Get entities from worldGen if available
+    if (this.worldGen) {
+      const entities = this.worldGen.getEntitiesInView(
         this.cameraX,
         this.cameraY,
         this.config.canvasWidth,
         this.config.canvasHeight,
       );
-    }
-
-    // Get coins from field if available
-    if (this.coinField) {
-      const coinPositions = this.coinField.getEntitiesInView(
-        this.cameraX,
-        this.cameraY,
-        this.config.canvasWidth,
-        this.config.canvasHeight,
+      this.trampolines = entities.trampolines.map(
+        t => new Trampoline(t.x, t.y, t.width),
       );
-      this.coins = coinPositions
+      this.coins = entities.coins
         .filter(p => !this.collectedCoins.has(this.coinKey(p.x, p.y)))
         .map(p => new Coin(p.x, p.y));
-    }
-
-    // Get enemies from field if available
-    if (this.enemyField) {
-      const enemyPositions = this.enemyField.getEntitiesInView(
-        this.cameraX,
-        this.cameraY,
-        this.config.canvasWidth,
-        this.config.canvasHeight,
-      );
-      this.enemies = enemyPositions.map(p => new Enemy(p.x, p.y));
+      this.enemies = entities.enemies.map(p => new Enemy(p.x, p.y));
     }
 
     // Update enemy floating
@@ -109,19 +87,18 @@ export class World {
       if (CollisionSystem.aabb(playerBounds, c.bounds())) {
         this.score += 1;
         this.collectedCoins.add(this.coinKey(c.x, c.y));
+        if (this.worldGen) {
+          this.worldGen.collectCoin(c.x, c.y);
+        }
         return false;
       }
       return true;
     });
 
-    // Remove entities far behind the player (only for non-field mode)
-    if (!this.trampolineField) {
+    // Remove entities far behind the player (only for non-worldGen mode)
+    if (!this.worldGen) {
       this.trampolines = this.trampolines.filter(t => !t.isFarBehind(this.player.x));
-    }
-    if (!this.coinField) {
       this.coins = this.coins.filter(c => !c.isFarBehind(this.player.x));
-    }
-    if (!this.enemyField) {
       this.enemies = this.enemies.filter(e => !e.isFarBehind(this.player.x));
     }
   }

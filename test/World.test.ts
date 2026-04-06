@@ -1,9 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { World } from '../src/World';
-import { EntityField } from '../src/systems/EntityField';
+import { WorldGen } from '../src/systems/WorldGen';
+import type { WorldGenConfig } from '../src/systems/WorldGen';
 import type { GameConfig } from '../src/types';
 
 const config: GameConfig = { gravity: 980, canvasWidth: 800, canvasHeight: 600 };
+
+const worldGenConfig: WorldGenConfig = {
+  cellSize: 100,
+  trampolines: { chance: 0.3, minSpacing: 2, sizeRange: { min: 80, max: 200 } },
+  coins: { chance: 0.5, minSpacing: 1 },
+  enemies: { chance: 0.3, minSpacing: 2 },
+};
 
 describe('World', () => {
   it('initializes with a player and empty entity lists', () => {
@@ -43,16 +51,16 @@ describe('World', () => {
     expect(w.trampolines).toHaveLength(0);
   });
 
-  it('populates coins from coinField when set', () => {
+  it('populates coins from worldGen when set', () => {
     const w = new World(config);
-    w.coinField = new EntityField(42, 800, 600, 'coin');
+    w.worldGen = new WorldGen(worldGenConfig);
     w.update(0.016);
     expect(w.coins.length).toBeGreaterThan(0);
   });
 
-  it('populates enemies from enemyField when set', () => {
+  it('populates enemies from worldGen when set', () => {
     const w = new World(config);
-    w.enemyField = new EntityField(42, 800, 600, 'enemy');
+    w.worldGen = new WorldGen(worldGenConfig);
     w.update(0.016);
     // enemies may or may not appear near origin, just verify it doesn't crash
     expect(Array.isArray(w.enemies)).toBe(true);
@@ -60,7 +68,7 @@ describe('World', () => {
 
   it('tracks collected coins so they do not reappear', () => {
     const w = new World(config);
-    w.coinField = new EntityField(42, 800, 600, 'coin');
+    w.worldGen = new WorldGen(worldGenConfig);
     w.update(0.016);
     const initialCount = w.coins.length;
     if (initialCount > 0) {

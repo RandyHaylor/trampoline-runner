@@ -7,6 +7,7 @@
 | 2 | Renderer layer + playable HTML entry point | Complete |
 | 3 | Remove auto-scroll, add left/right player movement, camera system | Complete |
 | 4 | Camera follow all directions, Perlin-driven world generation, floating enemies, coins | Complete |
+| 5 | Replace Perlin noise with grid-based HashRandom world generation | Complete |
 
 ## Sprint 2 Details (2026-04-06)
 
@@ -63,6 +64,27 @@
 - test/math/PerlinNoise.test.ts (6 tests) -- range, determinism, seed variation, smoothness, negative coords, integer boundaries
 - test/systems/TrampolineField.test.ts (6 tests) -- viewport query, determinism, variable width, negative coords, density, buffer zone
 - test/systems/EntityField.test.ts (7 tests) -- determinism, seed variation, coin/enemy sparsity, 2D distribution, viewport query
+
+## Sprint 5 Details (2026-04-06)
+
+**Delivered:**
+- src/math/HashRandom.ts -- deterministic integer hash from (x,y) grid coords returning float [0,1)
+- src/systems/WorldGen.ts -- unified grid-based world generation replacing TrampolineField + EntityField
+  - Configurable per-entity spawn configs: chance, minSpacing, sizeRange
+  - Neighbor spacing enforcement (highest hash wins among conflicts)
+  - Different hash channels per entity type to avoid correlation
+  - Coin collection tracking via collectCoin()
+- src/World.ts -- updated to use single worldGen property instead of three separate fields
+- src/main.ts -- wires WorldGen with tunable spawn configs
+- Deleted: PerlinNoise.ts, TrampolineField.ts, EntityField.ts and their test files
+
+**Test results:** 100 tests, 14 test files, all passing
+
+**New test files:**
+- test/math/HashRandom.test.ts (5 tests) -- range, determinism, uniqueness, negative coords, distribution
+- test/systems/WorldGen.test.ts (10 tests) -- determinism, layout variation, viewport bounds, spacing, density control, size ranges, coin collection, negative coords, grid alignment
+
+**Developers:** Robert Martin (HashRandom, World.ts integration), Martin Fowler (WorldGen, file cleanup)
 
 ## Sprint 1 Details (2026-04-06)
 
